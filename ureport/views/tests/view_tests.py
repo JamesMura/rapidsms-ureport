@@ -10,6 +10,8 @@ from rapidsms_httprouter.router import get_router
 from rapidsms_httprouter.models import Message
 import datetime
 from contact.models import Flag, MessageFlag
+from rapidsms_ureport.ureport.views import contact_registration_over_time
+
 
 class TestViews(TestCase):
     fixtures = ['test_fix.json','Initial_data.json','luo_translation.json','script2.json','script_luo.json','ussd.json']
@@ -195,6 +197,7 @@ class TestViews(TestCase):
         self.client.login(username="foo",password="barbar")
         response = self.client.get(reverse('alerts'))
         self.assertEqual(response.status_code, 200)
+
 
     
 
