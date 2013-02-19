@@ -25,5 +25,5 @@ class UreporterRegistrationStatsTest(TestCase):
 
 
     def test_can_list_counts_per_month(self):
-        self.assertEquals([{'count': 2, 'date': "2011-02-01"},{'count': 3, 'date': "2011-03-01"}],
+        self.assertEquals([{'count': 2, 'date': "2011-01-01"},{'count': 3, 'date': "2011-03-01"}],
                           get_ureport_contact_registrations_over_time('1/1/2011', '1/4/2011', 'month'))

@@ -20,14 +20,21 @@ def get_ureport_contact_registrations_over_time(start_date_string, end_date_stri
     start_date = get_date_from_string(start_date_string)
     end_date = get_date_from_string(end_date_string)
     truncate_date = connection.ops.date_trunc_sql(level, 'autoreg_join_date')
-    qs = UreportContact.objects.extra({level: truncate_date})
-    report = qs.values(level).annotate(Count('pk')).filter(
+    query = UreportContact.objects.extra({level: truncate_date})
+    report = query.values(level).annotate(Count('pk')).filter(
         autoreg_join_date__range=(start_date, end_date)).order_by(level)
-    print report.query
     out = []
+    DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
     for item in report:
+        count_date =""
+        if type(item[level])== datetime.datetime:
+            count_date = item[level].strftime("%Y-%m-%d")
+        elif type(item[level])== unicode:
+            count_date = datetime.datetime.strptime(item[level],DATETIME_FORMAT).strftime("%Y-%m-%d")
+        else:
+            count_date = ""
         out.append(
-            {"date": item[level].strftime("%Y-%m-%d") if type(item[level]) == datetime.datetime else "",
+            {"date": count_date,
              "count": item['pk__count']})
     return out
 
