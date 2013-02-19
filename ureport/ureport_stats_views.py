@@ -25,12 +25,13 @@ def get_ureport_contact_registrations_over_time(start_date_string, end_date_stri
         autoreg_join_date__range=(start_date, end_date)).order_by(level)
     out = []
     DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+    DATE_FORMAT = '%Y-%m-%d'
     for item in report:
         count_date =""
         if type(item[level])== datetime.datetime:
-            count_date = item[level].strftime("%Y-%m-%d")
+            count_date = item[level].strftime(DATE_FORMAT)
         elif type(item[level])== unicode:
-            count_date = datetime.datetime.strptime(item[level],DATETIME_FORMAT).strftime("%Y-%m-%d")
+            count_date = datetime.datetime.strptime(item[level],DATETIME_FORMAT).strftime(DATE_FORMAT)
         else:
             count_date = ""
         out.append(
