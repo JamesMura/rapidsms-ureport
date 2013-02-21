@@ -33,6 +33,25 @@
                     }
                 });
             });
+            $("select#missing").change(function () {
+                var value = $(this).val();
+                $('#pie').html('');
+                $.ajax({
+                    dataType: "json",
+                    url: "http://127.0.0.1:8000/mjspike_missing",
+                    data: {'field': value},
+                    success: function (data) {
+                        Morris.Donut({
+                            element: 'pie',
+                            data: [
+                                {label: "URpeort Contacts Missing " + value, value: data.percentage},
+                                {label: "URpeort Contacts with " + value, value: 100 - data.percentage}
+
+                            ]
+                        });
+                    }
+                });
+            }).change();
 
 
         });
@@ -46,7 +65,14 @@
     </div>
     <div id="myfirstchart" style="height: 400px;">
     </div>
-
+    <select name="missing_field" id="missing">
+        <option value="gender">Gender</option>
+        <option value="age">Age</option>
+        <option value="district">District</option>
+        <option value="village">Village</option>
+    </select>
+    <div id="pie" style="height: 400px;">
+    </div>
 
 
 

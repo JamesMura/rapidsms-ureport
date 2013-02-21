@@ -1,19 +1,15 @@
 import datetime
 import json
 from django.db import connection
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import HttpResponse
 from django.views.generic import View
 from django.views.generic.base import TemplateResponseMixin
 from rapidsms_ureport.ureport.models import UreportContact
 
 
-def get_date_format():
-    return "%d/%m/%Y"
-
-
 def get_date_from_string(start_date_string):
-    return datetime.datetime.strptime(start_date_string, get_date_format()).date()
+    return datetime.datetime.strptime(start_date_string, "%d/%m/%Y").date()
 
 
 def get_ureport_contact_registrations_over_time(start_date_string, end_date_string, level):
@@ -23,21 +19,9 @@ def get_ureport_contact_registrations_over_time(start_date_string, end_date_stri
     query = UreportContact.objects.extra({level: truncate_date})
     report = query.values(level).annotate(Count('pk')).filter(
         autoreg_join_date__range=(start_date, end_date)).order_by(level)
-    out = []
-    DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
     DATE_FORMAT = '%Y-%m-%d'
-    for item in report:
-        count_date =""
-        if type(item[level])== datetime.datetime:
-            count_date = item[level].strftime(DATE_FORMAT)
-        elif type(item[level])== unicode:
-            count_date = datetime.datetime.strptime(item[level],DATETIME_FORMAT).strftime(DATE_FORMAT)
-        else:
-            count_date = ""
-        out.append(
-            {"date": count_date,
-             "count": item['pk__count']})
-    return out
+    return [{'date': item[level].strftime(DATE_FORMAT) if item[level] else "", 'count': item['pk__count']} for item in
+            report]
 
 
 class UreporterRegistrationOverTimeJSONVIew(View):
@@ -55,3 +39,33 @@ class UreporterRegistrationOverTimeView(TemplateResponseMixin, View):
         return self.render_to_response({})
 
 
+class UreportContactMissingFieldJSONView(View):
+    def get(self, request):
+        field = self.request.GET.get('field')
+        data = []
+        if field in ["age"]:
+            data = get_all_ureport_contacts_missing_numeric_field(field)
+        else:
+            data = get_all_ureport_contacts_missing_field(field)
+        return HttpResponse(json.dumps(data), content_type="application/json")
+
+
+def get_all_ureport_contacts_missing_field(field_name):
+    total_number_of_reporters = UreportContact.objects.count()
+    queryset = UreportContact.objects.filter(
+        Q(**{'{0}__{1}'.format(field_name, "isnull"): True}) | Q(**{field_name: ""}))
+
+    number_contacts_without_field = queryset.aggregate(Count('pk'))['pk__count']
+    print queryset.query
+    return {"count": number_contacts_without_field,
+            "percentage": (number_contacts_without_field * 100 / total_number_of_reporters)}
+
+
+def get_all_ureport_contacts_missing_numeric_field(field_name):
+    total_number_of_reporters = UreportContact.objects.count()
+    queryset = UreportContact.objects.filter(
+        **{'{0}__{1}'.format(field_name, "isnull"): True})
+    number_contacts_without_field = queryset.aggregate(Count('pk'))['pk__count']
+    print queryset.query
+    return {"count": number_contacts_without_field,
+            "percentage": (number_contacts_without_field * 100 / total_number_of_reporters)}

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls.defaults import *
-from rapidsms_ureport.ureport.ureport_stats_views import UreporterRegistrationOverTimeView, UreporterRegistrationOverTimeJSONVIew
+from rapidsms_ureport.ureport.ureport_stats_views import UreporterRegistrationOverTimeView, UreporterRegistrationOverTimeJSONVIew, UreportContactMissingFieldJSONView
 from ureport.views import *
 from django.contrib.auth.decorators import login_required
 from generic.views import generic_row
@@ -161,5 +161,7 @@ urlpatterns = patterns('',
                        url(r"^dumpreport/(\d+)/$", generate_poll_dump_report),
                        url(r"^districtreport/(\d+)/$", generate_per_district_report),
                        url(r"^mjspike$", UreporterRegistrationOverTimeJSONVIew.as_view()),
-                       url(r"^mjspike_view$", UreporterRegistrationOverTimeView.as_view())
+                       url(r"^mjspike_view$", UreporterRegistrationOverTimeView.as_view()),
+                       url(r"^mjspike_missing$", UreportContactMissingFieldJSONView.as_view()),
+
 )
