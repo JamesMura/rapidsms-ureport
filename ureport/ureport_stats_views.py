@@ -19,8 +19,8 @@ def get_ureport_contact_registrations_over_time(start_date_string, end_date_stri
     query = UreportContact.objects.extra({level: truncate_date})
     report = query.values(level).annotate(Count('pk')).filter(
         autoreg_join_date__range=(start_date, end_date)).order_by(level)
-    DATE_FORMAT = '%Y-%m-%d'
-    return [{'date': item[level].strftime(DATE_FORMAT) if item[level] else "", 'count': item['pk__count']} for item in
+    DATE_FORMAT = '%B %Y'
+    return [[item[level].strftime(DATE_FORMAT) if item[level] else "", item['pk__count']] for item in
             report]
 
 
@@ -28,8 +28,10 @@ class UreporterRegistrationOverTimeJSONVIew(View):
     def get(self, request):
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
-        counts = get_ureport_contact_registrations_over_time(start_date, end_date, 'day')
-        return HttpResponse(json.dumps(counts), content_type="application/json")
+        counts = get_ureport_contact_registrations_over_time(start_date, end_date, 'month')
+        return HttpResponse(
+            json.dumps({'counts': [item[1] for item in counts], 'keys': [item[0] for item in counts]}),
+            content_type="application/json")
 
 
 class UreporterRegistrationOverTimeView(TemplateResponseMixin, View):
