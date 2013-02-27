@@ -35,16 +35,15 @@ def create_poll(driver, poll_name, question, group_name):
     driver.browser.click_link_by_partial_href('javascript:void(0);')
 
 
-def admin_can_create_poll(driver):
+def admin_can_create_poll(driver, ):
     group_name = 'group1'
     backend_name = 'dmark'
     user = driver.create_and_sign_in_admin("pass", "jamo")
-    create_backend(driver,backend_name)
-    create_group(driver,group_name)
-    create_contact(driver,"jamo", "999", user.username, group_name, backend_name)
+    create_backend(driver, backend_name)
+    create_group(driver, group_name)
+    create_contact(driver, "jamo", "999", user.username, group_name, backend_name)
     poll_name = "our poll"
     question = "question 12"
-    create_poll(driver,poll_name, question, group_name)
+    create_poll(driver, poll_name, question, group_name)
     driver.open('/polls/')
     assert driver.browser.is_text_present(question)
-

@@ -1,9 +1,3 @@
-from selenium.webdriver.chrome.webdriver import WebDriver
-from splinter import Browser
-from ureport.tests.integration.splinter_wrapper import SplinterTestCase
-from ureport.tests.factories import PollFactory
-
-
 def home_page(driver):
     driver.open("/")
     assert driver.browser.is_text_present('0')
@@ -15,11 +9,8 @@ def home_page(driver):
 
 
 def home_page_visualisation( driver):
-    PollFactory.create()
-    PollFactory.create()
-    PollFactory.create()
     driver.open('/')
-    assert driver.browser.is_text_present('CURRENT POLL')
+
     assert driver.browser.is_element_present_by_css('span.poll-question')
     assert driver.browser.is_element_present_by_css('div.highcharts-container')
 
@@ -30,7 +21,9 @@ def home_page_map(driver):
     assert driver.browser.is_element_present_by_css('div#OpenLayers.Map_2_OpenLayers_ViewPort')
 
 
-
+def best_viz(driver):
+    driver.open('/bestviz/?pks=l')
+    assert driver.browser.is_text_present('CURRENT POLL')
 
 
 
