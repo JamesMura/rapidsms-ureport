@@ -1,24 +1,24 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import bisect
+import textwrap
+import datetime
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.utils import simplejson
 from django.utils.safestring import mark_safe
 from django.http import HttpResponse
-from ureport.models import IgnoredTags
 from django.contrib.auth.decorators import login_required
-from ureport.utils import retrieve_poll
 from django.views.decorators.cache import cache_control
-from poll.models import Poll
-import bisect
-import textwrap
-import datetime
-from eav.models import Value
+from django.db import transaction
 
+from ureport.models import IgnoredTags
+from ureport.utils import retrieve_poll
+from poll.models import Poll
+from eav.models import Value
 from poll.models import ResponseCategory, Response
 from ureport.views.utils.tags import _get_tags, _get_responses
-from django.db import transaction
 
 
 @transaction.autocommit
@@ -41,13 +41,13 @@ def best_visualization(request, poll_id=None):
         'unlabeled': True,
         'module': module,
         'rate': int(rate),
-        }
-    if poll.type == Poll.TYPE_TEXT and not  ResponseCategory.objects.filter(response__poll=poll):
+    }
+    if poll.type == Poll.TYPE_TEXT and not ResponseCategory.objects.filter(response__poll=poll):
         dict.update({'tags': _get_tags(polls),
-                    'responses': _get_responses(poll),
-                    'poll_id': poll.pk})
+                     'responses': _get_responses(poll),
+                     'poll_id': poll.pk})
     return render_to_response('ureport/partials/viz/best_visualization.html'
-                              , dict,
+        , dict,
                               context_instance=RequestContext(request))
 
 
@@ -55,7 +55,7 @@ def best_visualization(request, poll_id=None):
 def add_drop_word(request, tag_name=None, poll_pk=None):
     IgnoredTags.objects.create(name=tag_name,
                                poll=get_object_or_404(Poll,
-                               pk=int(poll_pk)))
+                                                      pk=int(poll_pk)))
     return HttpResponse(simplejson.dumps('success'))
 
 
@@ -71,7 +71,7 @@ def delete_drop_word(request, tag_pk):
 def show_ignored_tags(request, poll_id):
     tags = IgnoredTags.objects.filter(poll__pk=poll_id)
     return render_to_response('ureport/partials/tag_cloud/ignored_tags.html'
-                              , {'tags': tags, 'poll_id': poll_id},
+        , {'tags': tags, 'poll_id': poll_id},
                               context_instance=RequestContext(request))
 
 
@@ -85,16 +85,17 @@ def tag_cloud(request, pks):
     polls = retrieve_poll(request, pks)
 
     poll_qn = ['Qn:' + ' '.join(textwrap.wrap(poll.question.rsplit('?'
-               )[0])) + '?' for poll in polls]
+    )[0])) + '?' for poll in polls]
 
     tags = _get_tags(polls)
     return render_to_response('ureport/partials/tag_cloud/tag_cloud.html'
-                              , {
-        'poll': polls[0],
-        'tags': tags,
-        'poll_qn': poll_qn[0],
-        'poll_id': pks,
-        }, context_instance=RequestContext(request))
+        , {
+                                  'poll': polls[0],
+                                  'tags': tags,
+                                  'poll_qn': poll_qn[0],
+                                  'poll_id': pks,
+                              }, context_instance=RequestContext(request))
+
 
 @transaction.autocommit
 def histogram(request, pks=None):
@@ -110,7 +111,7 @@ def histogram(request, pks=None):
         responses = Response.objects.filter(poll__in=polls)
         pks = polls.values_list('pk', flat=True)
         responses = Response.objects.filter(poll__in=polls,
-                poll__type=u'n')
+                                            poll__type=u'n')
         plottable_data = {}
         if responses:
             poll_results = {}
@@ -162,6 +163,7 @@ def histogram(request, pks=None):
                               {'polls': all_polls},
                               context_instance=RequestContext(request))
 
+
 @transaction.autocommit
 def show_timeseries(request, pks):
     polls = retrieve_poll(request, pks)
@@ -175,7 +177,7 @@ def show_timeseries(request, pks):
     message_count_list = []
     while current_date < end_date:
         count = responses.filter(message__date__range=(start_date,
-                                 current_date)).count()
+                                                       current_date)).count()
         message_count_list.append(count)
         current_date += interval
 
@@ -184,6 +186,13 @@ def show_timeseries(request, pks):
         'start': start_date,
         'end': end_date,
         'poll': mark_safe(poll),
-        }, context_instance=RequestContext(request))
+    }, context_instance=RequestContext(request))
+
+
+
+
+
+
+
 
 

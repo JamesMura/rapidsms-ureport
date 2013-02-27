@@ -1,0 +1,82 @@
+{% extends "ureport_layout.html" %}
+
+{% block javascripts %}
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    <script src="http://openlayers.org/api/2.11-rc1/OpenLayers.js?1123"></script>
+    <script type="text/javascript" src="{{ MEDIA_URL }}generic/javascripts/map.js"></script>
+    <script type="text/javascript" src="{{ MEDIA_URL }}ureport/javascripts/highcharts.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+
+    {{ block.super }}
+{% endblock %}
+{% block top_js %}
+    <script language="javascript">
+        $(document).ready(function () {
+            $('#plot_btn').click(function () {
+                var start_date = $('#start_date').val();
+                var end_date = $('#end_date').val();
+                $('#myfirstchart').html('');
+                $.ajax({
+                    dataType: "json",
+                    url: "http://127.0.0.1:8000/mjspike",
+                    data: {'start_date': start_date, 'end_date': end_date},
+                    success: function (data) {
+                        console.log(data);
+                        chart = new Highcharts.Chart({
+                                    chart: {
+                                        renderTo: 'myfirstchart',
+                                        type: 'line'
+                                    },
+                                    title: {
+                                        text: 'User Registrations'
+                                    },
+                                    xAxis: {
+                                        categories: data.keys
+                                    },
+                                    yAxis: {
+                                        title: {
+                                            text: 'Number of Registrations'
+                                        }
+                                    },
+                                    plotOptions: {
+                                        line: {
+                                            dataLabels: {
+                                                enabled: true
+                                            },
+                                            enableMouseTracking: false
+                                        }
+                                    },
+                                    series: [
+                                        {
+                                            name: 'Date',
+                                            data: data.counts
+                                        }
+                                    ]
+                                }
+                        )
+                    }});
+
+            });
+        });
+    </script>
+{% endblock %}
+{% block content %}
+    <div class="select dates">
+        <input type="text" name="start_date" id="start_date" placeholder="Start Date"/>
+        <input type="text" name="end_date" id="end_date" placeholder="End Date"/>
+        <a id="plot_btn" href="#">Plot</a>
+    </div>
+    <div id="myfirstchart" style="height: 400px;">
+    </div>
+    <select name="missing_field" id="missing">
+        <option value="gender">Gender</option>
+        <option value="age">Age</option>
+        <option value="district">District</option>
+        <option value="village">Village</option>
+    </select>
+    <div id="pie" style="height: 400px;">
+    </div>
+
+
+
+{% endblock %}
