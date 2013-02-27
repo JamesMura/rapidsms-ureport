@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from contact.models import MessageFlag
 from rapidsms.models import Contact
-from poll.models import Poll,ResponseCategory
+from poll.models import ResponseCategory
+from ureport.models.models import UPoll as Poll
 from script.models import ScriptStep
 from django.db.models import Count
 from .models import Ureporter,UreportContact
@@ -66,7 +67,7 @@ def retrieve_poll(request, pks=None):
     if pks == None:
         pks = request.GET.get('pks', '')
     if pks == 'l':
-        return [Poll.objects.exclude(pk__in=script_polls).exclude(pk__in=[366,297,296,349,350]).latest('start_date')]
+        return [Poll.objects.exclude(pk__in=script_polls).exclude(pk__in=[366,420,419,297,296,349,350]).latest('start_date')]
     else:
         return Poll.objects.filter(pk__in=[pks]).exclude(pk__in=script_polls)
 
